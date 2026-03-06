@@ -13,8 +13,8 @@ interface VisionResponse {
 }
 
 const providers: { name: VisionProvider; envKey: string }[] = [
-    { name: 'openai', envKey: 'OPENAI_API_KEY' },
-    { name: 'gemini', envKey: 'GEMINI_API_KEY' },
+    // { name: 'openai', envKey: 'OPENAI_API_KEY' },
+    // { name: 'gemini', envKey: 'GEMINI_API_KEY' },
     { name: 'claude', envKey: 'CLAUDE_API_KEY' },
 ];
 

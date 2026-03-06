@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Loader2, ExternalLink, Info, Sparkles, Camera } from 'lucide-react';
+import { useAppStore } from '@/stores/appStore';
 
 interface MenuItem {
     name: string;
@@ -31,8 +32,14 @@ export function MenuTab({ restaurant }: { restaurant: RestaurantWithDetails }) {
     const [menuData, setMenuData] = useState<MenuData | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const aiEnabled = useAppStore((s) => s.aiEnabled);
 
     useEffect(() => {
+        if (!aiEnabled) {
+            setIsLoading(false);
+            setError('AI features are disabled. Enable them from the home page to view menus.');
+            return;
+        }
         async function fetchMenu() {
             setIsLoading(true);
             setError(null);
@@ -58,7 +65,7 @@ export function MenuTab({ restaurant }: { restaurant: RestaurantWithDetails }) {
             }
         }
         fetchMenu();
-    }, [restaurant.id]);
+    }, [restaurant.id, aiEnabled]);
 
     if (isLoading) {
         return (

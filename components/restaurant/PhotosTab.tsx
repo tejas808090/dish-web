@@ -3,6 +3,7 @@
 import { Restaurant } from '@/types';
 import { useState, useCallback, useEffect } from 'react';
 import { X, Sparkles, Loader2, ChevronLeft, ChevronRight, ImageIcon, Plus } from 'lucide-react';
+import { useAppStore } from '@/stores/appStore';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface SerpPhoto {
@@ -92,8 +93,14 @@ export function PhotosTab({ restaurant }: { restaurant: Restaurant }) {
         }
     };
 
+    const aiEnabled = useAppStore((s) => s.aiEnabled);
+
     const identifyDish = async () => {
         if (selectedIndex === null) return;
+        if (!aiEnabled) {
+            setIdentifiedDish({ dishName: 'AI Disabled', description: 'Enable AI features from the home page to identify dishes.' });
+            return;
+        }
         setIsIdentifying(true);
         setIdentifiedDish(null);
 

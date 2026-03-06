@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { TrendingUp, Loader2, Sparkles } from 'lucide-react';
+import { useAppStore } from '@/stores/appStore';
 
 interface PopularDish {
     name: string;
@@ -14,8 +15,13 @@ export function PopularTab({ restaurant }: { restaurant: any }) {
     const [popularDishes, setPopularDishes] = useState<PopularDish[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [reviewCount, setReviewCount] = useState<number>(0);
+    const aiEnabled = useAppStore((s) => s.aiEnabled);
 
     useEffect(() => {
+        if (!aiEnabled) {
+            setIsLoading(false);
+            return;
+        }
         async function extractPopularDishes() {
             setIsLoading(true);
             try {
@@ -42,7 +48,7 @@ export function PopularTab({ restaurant }: { restaurant: any }) {
         }
 
         extractPopularDishes();
-    }, [restaurant.id, restaurant.name]);
+    }, [restaurant.id, restaurant.name, aiEnabled]);
 
     if (isLoading) {
         return (
