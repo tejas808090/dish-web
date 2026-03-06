@@ -106,18 +106,11 @@ export function PhotosTab({ restaurant }: { restaurant: Restaurant }) {
 
         try {
             const photoUrl = allPhotos[selectedIndex];
-            const imgRes = await fetch(photoUrl);
-            const blob = await imgRes.blob();
-            const base64 = await new Promise<string>((resolve) => {
-                const reader = new FileReader();
-                reader.onloadend = () => resolve(reader.result as string);
-                reader.readAsDataURL(blob);
-            });
 
             const res = await fetch('/api/identify-dish', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ image: base64 }),
+                body: JSON.stringify({ imageUrl: photoUrl }),
             });
             const data = await res.json();
             if (data.error) {

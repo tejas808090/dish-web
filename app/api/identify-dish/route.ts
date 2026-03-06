@@ -3,15 +3,15 @@ import { askVisionAI } from '@/lib/vision';
 
 export async function POST(request: Request) {
     try {
-        const { image } = await request.json();
+        const { image, imageUrl } = await request.json();
 
-        if (!image) {
+        if (!image && !imageUrl) {
             return NextResponse.json({ error: 'No image provided' }, { status: 400 });
         }
 
         const prompt = "What food dish is in this image? Respond with ONLY a JSON object in this exact format: {\"dishName\": \"Name of dish\", \"description\": \"One sentence description\"}. No other text.";
 
-        const result = await askVisionAI(image, prompt, 300);
+        const result = await askVisionAI(imageUrl || image, prompt, 300);
 
         return NextResponse.json(parseDishResponse(result.content, result.provider));
     } catch (error: any) {
