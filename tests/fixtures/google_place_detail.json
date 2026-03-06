@@ -1,0 +1,18 @@
+{
+    "id": "place_1",
+    "name": "Nobu New York",
+    "address": "105 Hudson St, New York, NY 10013",
+    "rating": 4.5,
+    "priceLevel": 4,
+    "cuisine": [
+        "Japanese",
+        "Sushi"
+    ],
+    "lat": 40.7196,
+    "lng": -74.0093,
+    "photoReferences": [
+        "photo_1",
+        "photo_2"
+    ],
+    "yelpId": "nobu-new-york-new-york"
+}

@@ -1,0 +1,20 @@
+[
+    {
+        "id": "review_1",
+        "text": "The Tonkotsu Ramen was incredible! Best I've ever had.",
+        "rating": 5,
+        "user": "John D."
+    },
+    {
+        "id": "review_2",
+        "text": "Sushi platters are fresh, but the Miso Soup was a bit salty.",
+        "rating": 4,
+        "user": "Jane S."
+    },
+    {
+        "id": "review_3",
+        "text": "Must try the Black Cod with Miso. It's their signature and truly amazing.",
+        "rating": 5,
+        "user": "Foodie123"
+    }
+]

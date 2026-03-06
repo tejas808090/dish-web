@@ -1,0 +1,16 @@
+{
+    "labels": [
+        {
+            "description": "Ramen",
+            "score": 0.98
+        },
+        {
+            "description": "Soup",
+            "score": 0.95
+        },
+        {
+            "description": "Noodle",
+            "score": 0.92
+        }
+    ]
+}
