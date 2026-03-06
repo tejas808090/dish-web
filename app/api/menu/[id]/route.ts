@@ -28,6 +28,7 @@ export async function GET(
 
     try {
         // === Step 1: Try website scrape + AI text extraction ===
+        let rawHtml = '';
         let pageText = '';
         if (websiteUrl) {
             try {
@@ -38,10 +39,10 @@ export async function GET(
                     },
                     signal: AbortSignal.timeout(8000),
                 });
-                const html = await siteRes.text();
+                rawHtml = await siteRes.text();
 
                 // Strip HTML and extract text
-                pageText = html
+                pageText = rawHtml
                     .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
                     .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
                     .replace(/<[^>]+>/g, ' ')
@@ -49,6 +50,7 @@ export async function GET(
                     .trim()
                     .slice(0, 8000);
             } catch {
+                rawHtml = '';
                 pageText = '';
             }
         }
@@ -69,7 +71,15 @@ export async function GET(
                     items: menuItems,
                 });
             }
-            console.log(`Menu: Website text had no menu items for "${restaurantName}", trying photo OCR...`);
+            console.log(`Menu: Homepage had no menu items for "${restaurantName}", looking for menu links...`);
+        }
+
+        // === Step 1b: Try to find and follow menu links from the homepage ===
+        if (rawHtml && websiteUrl) {
+            const menuPageResult = await tryMenuLinks(rawHtml, websiteUrl, restaurantName);
+            if (menuPageResult) {
+                return NextResponse.json(menuPageResult);
+            }
         }
 
         // === Step 2: Try menu photo OCR via SerpAPI + Vision AI ===
@@ -135,6 +145,79 @@ export async function GET(
         console.error('Menu extraction error:', error);
         return NextResponse.json({ error: error.message || 'Failed to extract menu' }, { status: 500 });
     }
+}
+
+/**
+ * Extract menu-related links from homepage HTML and try scraping them.
+ * Returns menu data if successful, null otherwise.
+ */
+async function tryMenuLinks(html: string, baseUrl: string, restaurantName: string) {
+    // Find href values containing "menu" (simple regex — avoids backtracking on large HTML)
+    const hrefRegex = /href="([^"]*menu[^"]*)"/gi;
+    const base = new URL(baseUrl);
+
+    const menuLinks: string[] = [];
+    let match;
+    while ((match = hrefRegex.exec(html)) !== null) {
+        try {
+            const fullUrl = new URL(match[1], base).toString();
+            // Only follow links on the same domain (strip www.), skip root path
+            const parsed = new URL(fullUrl);
+            const baseHost = base.hostname.replace(/^www\./, '');
+            const linkHost = parsed.hostname.replace(/^www\./, '');
+            if (linkHost === baseHost && parsed.pathname !== '/' && !menuLinks.includes(fullUrl)) {
+                menuLinks.push(fullUrl);
+            }
+        } catch {
+            // Invalid URL, skip
+        }
+    }
+
+    if (menuLinks.length === 0) return null;
+
+    console.log(`Menu: Found ${menuLinks.length} menu link(s): ${menuLinks.join(', ')}`);
+
+    // Try each menu link (up to 3)
+    for (const menuUrl of menuLinks.slice(0, 3)) {
+        try {
+            const res = await fetch(menuUrl, {
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (compatible; DishBot/1.0)',
+                    'Accept': 'text/html',
+                },
+                signal: AbortSignal.timeout(8000),
+            });
+            const menuHtml = await res.text();
+            const menuText = menuHtml
+                .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+                .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+                .replace(/<[^>]+>/g, ' ')
+                .replace(/\s+/g, ' ')
+                .trim()
+                .slice(0, 8000);
+
+            if (!menuText || menuText.length < 100) continue;
+
+            const prompt = `Extract menu items from "${restaurantName}" website text. ONLY extract items that are clearly listed as menu items with names. Return JSON array only: [{"name":"...","price":12.99,"category":"..."},...]. Set price to null if unknown. Use category "Other" if unclear. Return [] if no menu items are found in the text.\n\n${menuText}`;
+            const aiResponse = await askAI(prompt);
+            const menuItems = parseJSONFromAI(aiResponse.content);
+
+            if (menuItems.length > 0) {
+                console.log(`Menu: Found ${menuItems.length} items from menu link: ${menuUrl}`);
+                return {
+                    restaurantName,
+                    source: 'website' as const,
+                    aiProvider: aiResponse.provider,
+                    websiteUrl: menuUrl,
+                    items: menuItems,
+                };
+            }
+        } catch (err: any) {
+            console.warn(`Menu: Failed to scrape menu link ${menuUrl}:`, err.message);
+        }
+    }
+
+    return null;
 }
 
 /**
