@@ -1,0 +1,26 @@
+[
+  {
+    "id": "place_1",
+    "name": "Nobu New York",
+    "address": "105 Hudson St, New York, NY 10013",
+    "rating": 4.5,
+    "priceLevel": 4,
+    "cuisine": ["Japanese", "Sushi", "Fine Dining"],
+    "lat": 40.7196,
+    "lng": -74.0093,
+    "photoReferences": ["photo_1", "photo_2"],
+    "yelpId": "nobu-new-york-new-york"
+  },
+  {
+    "id": "place_2",
+    "name": "Joe's Pizza",
+    "address": "7 Carmine St, New York, NY 10014",
+    "rating": 4.7,
+    "priceLevel": 1,
+    "cuisine": ["Pizza", "Italian", "Quick Bite"],
+    "lat": 40.7305,
+    "lng": -74.0021,
+    "photoReferences": ["photo_3"],
+    "yelpId": "joes-pizza-new-york-4"
+  }
+]
